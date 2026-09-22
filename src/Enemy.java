@@ -46,7 +46,7 @@ public abstract class Enemy {
     }
 
     /**
-     * Gets the accuracy of this enemy, used to determine hit chance.
+     * Gets the accuracy of this enemy
      *
      * @return the enemy's accuracy as a value between 0 and 1
      */
@@ -63,7 +63,33 @@ public abstract class Enemy {
         return type;
     }
 
-    // takeDamage 
-    // useAbility 
-    
+    /**
+     * Reduces this enemy's HP by the amount specified
+     *
+     * @param amount the amount of damage to apply
+     */
+    public void takeDamage(int amount) {
+        int newHp = hp - amount;
+        if (newHp < 0) {
+            newHp = 0;
+        }
+        hp = newHp;
+    }
+
+    /**
+     * Adds HP to this enemy
+     *
+     * @param amount the amount of HP to add
+     */
+    public void heal(int amount) {
+        hp = hp + amount;
+    }
+
+    /**
+     * Uses this enemy's unique ability against the given player 
+     *
+     * @param target the player this enemy is fighting
+     */
+    public abstract void useAbility(Player target);
+
 }
