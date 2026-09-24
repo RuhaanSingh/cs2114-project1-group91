@@ -1,3 +1,5 @@
+import player.Player;
+
 /**
  * A Zombie enemy. Has a chance to drain HP from the player when it
  * attacks, healing itself by the same amount.

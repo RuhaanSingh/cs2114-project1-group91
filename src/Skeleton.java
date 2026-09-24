@@ -1,3 +1,5 @@
+import player.Player;
+
 /**
  * A Skeleton enemy. Has a chance to come back to life once after
  * hitting 0 HP, instead of dying right away.

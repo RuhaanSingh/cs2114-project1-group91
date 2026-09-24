@@ -1,3 +1,5 @@
+import player.Player;
+
 /**
  * A Witch enemy. Has a chance to curse the player, lowering their
  * accuracy for a turn.

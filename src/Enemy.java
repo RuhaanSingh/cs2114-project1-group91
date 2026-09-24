@@ -8,6 +8,8 @@
 // I have not used any assistance for the assignment beyond course resources and
 // staff.
 
+import player.Player;
+
 /**
  * Represents an enemy in the game. Has stats that every
  * enemy type has, like health and hit percentage.

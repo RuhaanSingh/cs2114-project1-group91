@@ -15,6 +15,7 @@ public class Player
     private Weapon equippedWeapon;
     private int encountersCleared;
     private boolean poisoned;
+    private double accuracyModifier;
     /**
      * Player constructor used to initialize the field in Player.
      * 
@@ -27,6 +28,7 @@ public class Player
         this.equippedWeapon = equippedWeapon;
         this.encountersCleared = 0;
         this.poisoned = false;
+        this.accuracyModifier = 1.0;
     }
     /**
      * Updates the player's Hp by a specified amount.
@@ -106,5 +108,30 @@ public class Player
     public void setPoisoned(boolean poisoned) {
         this.poisoned = poisoned;
     }
-    
+
+    // Added by Ajeet so Witch.useAbility() (already calling lowerAccuracy())
+    // has somewhere to store the curse effect for Combat to read.
+    /**
+     * Applies a curse that halves the player's accuracy until it is cleared.
+     */
+    public void lowerAccuracy() {
+        accuracyModifier = 0.5;
+    }
+
+    /**
+     * Gets the current accuracy multiplier caused by curses.
+     *
+     * @return 1.0 normally, or less while cursed.
+     */
+    public double getAccuracyModifier() {
+        return accuracyModifier;
+    }
+
+    /**
+     * Resets the accuracy multiplier back to normal after it has been used.
+     */
+    public void clearAccuracyModifier() {
+        accuracyModifier = 1.0;
+    }
+
 }
