@@ -17,6 +17,7 @@ public class Combat
     private Enemy enemy;
     private final Random rng;
     private double fleeChance;
+    private boolean escaped;
 
     /**
      * Creates a Combat that rolls hit/flee chances off the given Random.
@@ -37,6 +38,8 @@ public class Combat
     public void startEncounter(Player player, Enemy enemy) {
         this.player = player;
         this.enemy = enemy;
+        this.escaped = false;
+        player.clearAccuracyModifier();
     }
 
     /**
@@ -73,6 +76,15 @@ public class Combat
         return "That's not something you can do right now. Type 'fight' or 'flee'.";
     }
 
+    /**
+     * Reports whether the player successfully fled this encounter.
+     *
+     * @return true after a successful escape
+     */
+    public boolean hasEscaped() {
+        return escaped;
+    }
+
     private String resolveFight() {
         StringBuilder message = new StringBuilder();
         double accuracy = player.getEquippedWeapon().getAccuracy()
@@ -89,26 +101,47 @@ public class Combat
         player.clearAccuracyModifier();
 
         if (enemy.getHp() <= 0) {
-            enemy.useAbility(player);
-            message.append("The ").append(enemy.getType()).append(" falls.");
-            return message.toString();
+            if (enemy instanceof Skeleton) {
+                enemy.useAbility(player);
+            }
+            if (enemy.getHp() <= 0) {
+                message.append("The ").append(enemy.getType()).append(" falls.");
+                return message.toString();
+            }
+            message.append("The Skeleton reassembles with 1 HP! ");
         }
 
         if (rng.nextDouble() < enemy.getAccuracy()) {
             int damage = enemy.getAttackValue();
+            if (enemy instanceof Zombie) {
+                int previousHp = enemy.getHp();
+                enemy.useAbility(player);
+                if (enemy.getHp() > previousHp) {
+                    message.append("The Zombie drains ").append(damage)
+                        .append(" HP from you and heals itself.");
+                    return message.toString();
+                }
+            }
             player.takeDamage(damage);
             message.append("The ").append(enemy.getType())
                 .append(" hits you for ").append(damage).append(" damage.");
+            if (player.isAlive() && enemy instanceof Witch) {
+                enemy.useAbility(player);
+                if (player.getAccuracyModifier() < 1.0) {
+                    message.append(" You are cursed: accuracy is halved for your next attack.");
+                }
+            }
         }
         else {
             message.append("The ").append(enemy.getType()).append(" misses you.");
         }
-        enemy.useAbility(player);
         return message.toString();
     }
 
     private String resolveFlee() {
         if (rng.nextDouble() < fleeChance) {
+            escaped = true;
+            player.clearAccuracyModifier();
             return "You slip away safely.";
         }
         int damage = enemy.getAttackValue();

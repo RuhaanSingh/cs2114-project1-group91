@@ -106,14 +106,16 @@ public class Game
             combat.startEncounter(player, enemy);
             System.out.println("A " + enemy.getType() + " blocks your path!");
 
+            printHealth(enemy);
             boolean encounterOver = false;
             while (!encounterOver) {
                 System.out.println("Type 'fight' or 'flee':");
                 String cleaned = cleanInput(input.nextLine());
                 String outcome = combat.resolveTurn(cleaned);
                 System.out.println(outcome);
+                printHealth(enemy);
 
-                if ("flee".equals(cleaned)) {
+                if (combat.hasEscaped()) {
                     encounterOver = true;
                 }
                 else if (enemy.getHp() <= 0) {
@@ -175,7 +177,7 @@ public class Game
     }
 
     /**
-     * Randomly picks an enemy template to spawn.
+     * Creates a fresh enemy from a randomly selected template.
      *
      * @return the spawned Enemy
      * @throws IllegalStateException if there are no enemy templates to pick from
@@ -184,7 +186,27 @@ public class Game
         if (enemyTemplates.isEmpty()) {
             throw new IllegalStateException("No enemy templates to spawn from.");
         }
-        return enemyTemplates.get(random.nextInt(enemyTemplates.size()));
+        Enemy template = enemyTemplates.get(random.nextInt(enemyTemplates.size()));
+        if (template instanceof Witch) {
+            Witch witch = (Witch)template;
+            return new Witch(witch.getType(), witch.getHp(), witch.getAttackValue(),
+                witch.getAccuracy(), witch.getCurseChance());
+        }
+        if (template instanceof Zombie) {
+            Zombie zombie = (Zombie)template;
+            return new Zombie(zombie.getType(), zombie.getHp(), zombie.getAttackValue(),
+                zombie.getAccuracy(), zombie.getDrainChance());
+        }
+        if (template instanceof Skeleton) {
+            return new Skeleton(template.getType(), template.getHp(),
+                template.getAttackValue(), template.getAccuracy());
+        }
+        throw new IllegalStateException("Unknown enemy type: " + template.getType());
+    }
+
+    private void printHealth(Enemy enemy) {
+        System.out.println("Your HP: " + player.getHp() + " | "
+            + enemy.getType() + " HP: " + enemy.getHp());
     }
 
     /**

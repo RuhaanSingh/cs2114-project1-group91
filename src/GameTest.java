@@ -126,4 +126,57 @@ public class GameTest extends TestCase
     public void testGetEquippedWeapon() {
         assertEquals(weapons.get(0), game.getEquippedWeapon());
     }
+    /** Each spawn has independent HP and an unused reassembly ability. */
+    public void testSpawnEnemyIsFresh() {
+        Enemy first = game.spawnEnemy();
+        first.takeDamage(20);
+        first.useAbility(null);
+        Enemy second = game.spawnEnemy();
+        assertNotSame(first, second);
+        assertEquals(20, second.getHp());
+        assertFalse(((Skeleton)second).getHasReassembled());
+        assertEquals(20, enemies.get(0).getHp());
+    }
+
+    /** Witch and zombie copies preserve their configured ability chances. */
+    public void testSpawnAbilityEnemies() {
+        enemies.clear();
+        enemies.add(new Witch("Witch", 30, 8, 0.6, 0.3));
+        Witch witch = (Witch)game.spawnEnemy();
+        assertNotSame(enemies.get(0), witch);
+        assertEquals(0.3, witch.getCurseChance(), 0.001);
+        enemies.clear();
+        enemies.add(new Zombie("Zombie", 40, 10, 0.5, 0.4));
+        Zombie zombie = (Zombie)game.spawnEnemy();
+        assertNotSame(enemies.get(0), zombie);
+        assertEquals(40, zombie.getHp());
+        assertEquals(0.4, zombie.getDrainChance(), 0.001);
+    }
+
+    /** A failed flee stays in combat, and fatal damage reports game over. */
+    public void testFailedFleeStaysInEncounter() {
+        enemies.clear();
+        enemies.add(new Zombie("Zombie", 40, 10, 0.0, 0.0));
+        Random rolls = new Random() {
+            public double nextDouble() {
+                return 0.99;
+            }
+        };
+        Game fleeingGame = new Game(weapons, enemies, 3, rolls,
+            new Scanner("1\nflee\nflee\n"), new Player(20, weapons.get(0)));
+        java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream original = System.out;
+        try {
+            System.setOut(new java.io.PrintStream(output));
+            fleeingGame.run();
+        }
+        finally {
+            System.setOut(original);
+        }
+        assertEquals(0, fleeingGame.getHp());
+        assertEquals(0, fleeingGame.getEncountersCleared());
+        assertTrue(output.toString().contains("Your HP: 20 | Zombie HP: 40"));
+        assertTrue(output.toString().contains("Your HP: 0 | Zombie HP: 40"));
+        assertTrue(output.toString().contains("You have died. Game over."));
+    }
 }

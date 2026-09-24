@@ -77,6 +77,74 @@ public class CombatTest extends TestCase
         assertTrue(message.contains("fail to escape"));
     }
 
+    /** Checks that escape state reflects success and resets for each encounter. */
+    public void testEscapeState() {
+        Combat combat = new Combat(new FixedRandom(0.5));
+        combat.startEncounter(player, enemy);
+        combat.setFleeChance(0.0);
+        combat.resolveTurn("flee");
+        assertFalse(combat.hasEscaped());
+        combat.setFleeChance(1.0);
+        combat.resolveTurn("flee");
+        assertTrue(combat.hasEscaped());
+        combat.startEncounter(player, enemy);
+        assertFalse(combat.hasEscaped());
+    }
+
+    /** A dead zombie cannot drain the player or revive itself. */
+    public void testDeadZombieDoesNotDrain() {
+        Combat combat = new Combat(new FixedRandom(0.0));
+        Enemy zombie = new Zombie("Zombie", 10, 5, 1.0, 1.0);
+        combat.startEncounter(player, zombie);
+        assertTrue(combat.resolveTurn("fight").contains("falls"));
+        assertEquals(0, zombie.getHp());
+        assertEquals(50, player.getHp());
+    }
+
+    /** A successful drain replaces normal damage rather than doubling it. */
+    public void testZombieDrainDealsDamageOnce() {
+        Combat combat = new Combat(new FixedRandom(0.0));
+        Enemy zombie = new Zombie("Zombie", 30, 5, 1.0, 1.0);
+        combat.startEncounter(player, zombie);
+        assertTrue(combat.resolveTurn("fight").contains("drains"));
+        assertEquals(25, zombie.getHp());
+        assertEquals(45, player.getHp());
+    }
+
+    /** A missed attack cannot curse the player. */
+    public void testWitchMissDoesNotCurse() {
+        Combat combat = new Combat(new FixedRandom(0.0));
+        combat.startEncounter(player, new Witch("Witch", 30, 5, 0.0, 1.0));
+        combat.resolveTurn("fight");
+        assertEquals(1.0, player.getAccuracyModifier(), 0.001);
+        assertEquals(50, player.getHp());
+    }
+
+    /** Curses are reported and expire after the next attack. */
+    public void testCurseLastsOneAttack() {
+        Combat combat = new Combat(new FixedRandom(0.5));
+        Enemy witch = new Witch("Witch", 30, 5, 1.0, 1.0);
+        combat.startEncounter(player, witch);
+        assertTrue(combat.resolveTurn("fight").contains("cursed"));
+        assertEquals(0.5, player.getAccuracyModifier(), 0.001);
+        witch.takeDamage(20);
+        assertTrue(combat.resolveTurn("fight").contains("miss"));
+        assertEquals(1.0, player.getAccuracyModifier(), 0.001);
+    }
+
+    /** Reassembly is reported as survival and can happen only once. */
+    public void testSkeletonReassemblesOnceInCombat() {
+        Combat combat = new Combat(new FixedRandom(0.0));
+        Enemy skeleton = new Skeleton("Skeleton", 10, 5, 0.0);
+        combat.startEncounter(player, skeleton);
+        String first = combat.resolveTurn("fight");
+        assertTrue(first.contains("reassembles"));
+        assertFalse(first.contains("falls"));
+        assertEquals(1, skeleton.getHp());
+        assertTrue(combat.resolveTurn("fight").contains("falls"));
+        assertEquals(0, skeleton.getHp());
+    }
+
     /**
      * A Random stand-in that always returns the same value from
      * nextDouble(), so hit/miss and flee rolls are fully deterministic.

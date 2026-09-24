@@ -45,9 +45,9 @@ unique effect (curse, HP drain, and one-time revival respectively).
 
 ## Known limitations
 
-- `Game.spawnEnemy()` returns the same template `Enemy` instance from its
-  list rather than a fresh copy per encounter, per the original design
-  discussion — an enemy's HP does not currently reset between spawns of
-  the same template.
+- Each encounter spawns a fresh enemy with full starting HP and unused abilities.
+- Player and enemy HP are displayed at the start of combat and after each action.
+- Potions heal or cure poison when used in code, but inventory and potion commands
+  are not yet connected to the interactive game.
 - Doors are cosmetic in the current MVP: every door leads to a random
   encounter rather than a fixed layout.
