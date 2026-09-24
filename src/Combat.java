@@ -8,7 +8,7 @@ import player.Player;
  * injected Random for all hit/flee rolls so results can be reproduced
  * in tests.
  *
- * @author Ajeet Bondugula
+ * @author Angelina Gust
  * @version Sep 23, 2026
  */
 public class Combat
