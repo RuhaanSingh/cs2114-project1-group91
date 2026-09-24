@@ -8,7 +8,7 @@ import student.TestCase;
  * Tests for Combat: at least one normal and one bad-input case per
  * key method, using a seeded/fixed Random so outcomes are deterministic.
  *
- * @author Ajeet Bondugula
+ * @author Angelina Gust
  * @version Sep 23, 2026
  */
 public class CombatTest extends TestCase
